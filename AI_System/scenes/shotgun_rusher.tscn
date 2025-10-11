@@ -1,0 +1,60 @@
+[gd_scene load_steps=7 format=3 uid="uid://b7xm2lap5qth4"]
+
+[ext_resource type="Script" path="res://AI_System/scripts/ai_shotgun_rusher.gd" id="1_5j2k7"]
+[ext_resource type="Script" path="res://AI_System/scripts/ai_weapon_controller.gd" id="2_8h4n6"]
+[ext_resource type="Resource" path="res://AI_System/resources/shotgun_ai_weapon.tres" id="3_r6m2l"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_1"]
+radius = 0.4
+height = 1.8
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_1"]
+radius = 0.4
+height = 1.8
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_1"]
+radius = 25.0
+
+[node name="ShotgunRusher" type="CharacterBody3D" groups=["Enemies"]]
+collision_layer = 64
+collision_mask = 3
+script = ExtResource("1_5j2k7")
+max_health = 60.0
+move_speed = 6.0
+rotation_speed = 4.0
+detection_range = 30.0
+target_loss_time = 2.0
+weapon_controller = NodePath("WeaponController")
+detection_area = NodePath("DetectionArea")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("CapsuleShape3D_1")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("CapsuleMesh_1")
+
+[node name="WeaponController" type="Node3D" parent="."]
+script = ExtResource("2_8h4n6")
+weapon_resource = ExtResource("3_r6m2l")
+fire_point = NodePath("FirePoint")
+
+[node name="FirePoint" type="Node3D" parent="WeaponController"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, -0.6)
+
+[node name="DetectionArea" type="Area3D" parent="."]
+
+[node name="DetectionShape" type="CollisionShape3D" parent="DetectionArea"]
+shape = SubResource("SphereShape3D_1")
+
+[node name="HealthBar" type="ProgressBar" parent="."]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -35.0
+offset_right = 20.0
+offset_bottom = -25.0
+max_value = 60.0
+value = 60.0
