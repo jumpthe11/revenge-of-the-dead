@@ -2,13 +2,15 @@
 
 ## Project Overview
 
-**Revenge of the Dead** is a comprehensive First Person Shooter template built in Godot 4, designed for rapid prototyping of FPS games. The project features a modular weapon system, advanced player controller, and component-based architecture that allows for flexible game development.
+**Revenge of the Dead** is a First Person Shooter base defense game built in Godot 4. Players defend their base against waves of attacking zombies using a variety of weapons and strategic positioning. The project evolved from an FPS template into a focused base defense experience with wave-based gameplay.
 
 ### Engine & Platform
 - **Engine**: Godot 4.5
 - **Platform**: Windows (PowerShell development environment)
 - **Project Name**: RevengeOfTheDead
 - **Main Scene**: `res://Example World/Objects/World/world.tscn`
+- **Game Mode**: Single-player base defense (multiplayer planned for future)
+- **Game Type**: FPS + Tower Defense hybrid
 
 ---
 
@@ -402,13 +404,23 @@ The project uses a organized physics layer system:
 ## 🔄 Version History
 
 - **Current**: Godot 4.5 compatible version with AI System
-- **Latest Addition**: Wave management system with resource-based configuration
+- **Latest Addition**: Git repository initialized with complete project tracking
+- **Previous Addition**: Wave management system with resource-based configuration
 - **Recent Fix**: Resolved WaveConfig class loading issues and resource preload errors
 - **Features**: Complete weapon system, advanced player controller, specialized AI enemies, wave system
 - **AI Types**: Rifle soldiers, shotgun rushers, melee brutes
-- **Status**: Active development template with AI support and wave management
+- **Status**: Active development template with AI support, wave management, and version control
 
-### Recent Bug Fixes (2025-10-11)
+### Recent Updates (2025-10-11)
+
+**Git Repository Initialized:**
+- Initialized git repository in project directory
+- Added all 589 project files to version control
+- Created initial commit with message "Initial commit: Revenge of the Dead game project"
+- Repository includes all game assets, AI system, player controller, and documentation
+- Ready for collaborative development and feature branching
+
+**Previous Bug Fixes:**
 
 **Fixed Resource Loading Issues:**
 - Corrected `preload()` syntax in .tres resource files to use proper `ExtResource` format
