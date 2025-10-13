@@ -12,6 +12,7 @@ signal Hit_Successfull
 @export var Expirey_Time: int = 10
 @export var Rigid_Body_Projectile: PackedScene
 @export var pass_through: bool = false
+@export var Individual_Projectile_Lifetime: float = 3.0  ## Time in seconds before rigid body projectile auto-destroys
 
 @onready var Debug_Bullet = preload("res://Player_Controller/Spawnable_Objects/hit_debug.tscn")
 
@@ -119,6 +120,10 @@ func Launch_Rigid_Body_Projectile(Collision_Data, _projectile, _origin_point):
 	
 	var _Direction = (_Point - _origin_point).normalized()
 	_proj.set_linear_velocity(_Direction*Projectile_Velocity)
+	
+	# Add cleanup timer to prevent infinite travel
+	var cleanup_timer = get_tree().create_timer(Individual_Projectile_Lifetime)
+	cleanup_timer.timeout.connect(_cleanup_projectile.bind(_proj))
 
 func _on_body_entered(body, _proj, _norm):
 	if body.is_in_group("Target") && body.has_method("Hit_Successful"):
@@ -132,6 +137,14 @@ func _on_body_entered(body, _proj, _norm):
 	
 	if Projectiles_Spawned.is_empty():
 		queue_free()
+
+func _cleanup_projectile(_proj: RigidBody3D):
+	if _proj and is_instance_valid(_proj):
+		_proj.queue_free()
+		Projectiles_Spawned.erase(_proj)
+		
+		if Projectiles_Spawned.is_empty():
+			queue_free()
 
 func _on_timer_timeout():
 	queue_free()

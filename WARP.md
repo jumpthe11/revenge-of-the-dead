@@ -187,6 +187,9 @@ The AI System is a performance-optimized enemy framework that uses simplified we
 - **Component System**: Modular projectiles, spray patterns, and behaviors
 - **State Management**: Handles weapon switching, shooting, reloading
 - **Animation Integration**: Seamless animation system integration
+- **Dual Shooting System**: Separate functions for manual shots and auto-fire
+  - `shoot()`: Manual shooting with fire rate timer control
+  - `auto_fire_shoot()`: Auto-fire that relies on animation timing
 
 **Supported Weapon Types**:
 - **Hitscan**: Instant-hit weapons (rifles, pistols)
@@ -211,6 +214,8 @@ The AI System is a performance-optimized enemy framework that uses simplified we
 - max_ammo: int (reserve ammo)
 - damage: int (base damage)
 - fire_range: int (effective range)
+- fire_rate: float (rounds per minute - RPM)
+- melee_damage: float (melee attack damage)
 - auto_fire: bool (full-auto capability)
 
 # Weapon Behavior
@@ -218,6 +223,31 @@ The AI System is a performance-optimized enemy framework that uses simplified we
 - weapon_spray: PackedScene (spread pattern)
 - projectile_to_load: PackedScene (bullet type)
 - incremental_reload: bool (shotgun-style reload)
+```
+
+### Weapon Stats Modifier System
+**Location**: `Player_Controller/scripts/Weapon_State_Machine/weapon_stats_modifier.gd`
+
+**Features**:
+- **Additive & Multiplicative Modifiers**: Support for both flat bonuses and percentage increases
+- **Real-time Stat Calculation**: Cached values updated only when modifiers change
+- **Fire Rate Animation Scaling**: Smart animation speed scaling (30 RPM = 1.0x, 120+ RPM = 2.0x max)
+- **Performance Optimized**: Timer-based fire rate limiting instead of per-frame calculations
+
+**Available Stats**:
+- **Damage**: Base weapon damage with modifiers
+- **Fire Rate**: Rounds per minute with smart animation scaling
+- **Magazine Size**: Clip capacity with modifiers
+- **Max Ammo**: Reserve ammunition capacity
+- **Fire Range**: Maximum effective range
+- **Melee Damage**: Close-combat damage
+- **Reload Time**: Time to reload weapon
+
+**Usage Example**:
+```gdscript
+# Add +10 damage and +50% fire rate
+weapon_state_machine.add_stat_modifier("damage", 10.0, 1.0)
+weapon_state_machine.add_stat_modifier("fire_rate", 0.0, 1.5)
 ```
 
 ---
@@ -298,6 +328,17 @@ The AI system is designed with performance as a primary concern:
 - **Reduced Calculations**: Simplified spread and accuracy systems
 - **Limited Active Projectiles**: Configurable limits per weapon type
 - **Fast Collision Checks**: Optimized raycasting for line-of-sight
+
+**Projectile Performance Optimizations:**
+- **Automatic Cleanup Timers**: Rigid body projectiles self-destruct after configurable time (default 8 seconds)
+- **No Infinite Travel**: Prevents performance issues from projectiles traveling indefinitely
+- **Memory Management**: Automatic removal from tracking arrays when projectiles are cleaned up
+
+**Weapon Stats Performance Optimizations:**
+- **Timer-Based Fire Rate**: Uses efficient Timer nodes instead of per-frame calculations
+- **Cached Stat Calculations**: Stats only recalculated when modifiers change, not every shot
+- **Animation Speed Capping**: Prevents extremely fast animations (max 2.0x speed) for high fire rates
+- **Meta Data Storage**: Weapon stats stored as metadata to avoid unnecessary object creation
 
 ---
 
@@ -411,7 +452,17 @@ The project uses a organized physics layer system:
 - **AI Types**: Rifle soldiers, shotgun rushers, melee brutes
 - **Status**: Active development template with AI support, wave management, and version control
 
-### Recent Updates (2025-10-11)
+### Recent Updates (2025-10-13)
+
+**Weapon System Fixes:**
+- Fixed double shooting issues caused by conflicting timer and animation logic
+- Separated manual shooting and auto-fire systems for proper functionality
+- Resolved auto-fire problems where weapons wouldn't fire continuously
+- Added missing fire_rate property to blasterN weapon (60.0 RPM)
+- Improved fire rate timer implementation to prevent shooting conflicts
+- Animation and shooting logic are now properly separated as intended
+
+**Previous Updates (2025-10-11)**
 
 **Git Repository Initialized:**
 - Initialized git repository in project directory

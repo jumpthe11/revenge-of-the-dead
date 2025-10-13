@@ -1,8 +1,8 @@
 [gd_scene load_steps=7 format=3 uid="uid://b7xm2lap5qth4"]
 
-[ext_resource type="Script" path="res://AI_System/scripts/ai_shotgun_rusher.gd" id="1_5j2k7"]
-[ext_resource type="Script" path="res://AI_System/scripts/ai_weapon_controller.gd" id="2_8h4n6"]
-[ext_resource type="Resource" path="res://AI_System/resources/shotgun_ai_weapon.tres" id="3_r6m2l"]
+[ext_resource type="Script" uid="uid://dbxj3k3wasrhe" path="res://AI_System/scripts/ai_shotgun_rusher.gd" id="1_5j2k7"]
+[ext_resource type="Script" uid="uid://c31b46nb7p6qt" path="res://AI_System/scripts/ai_weapon_controller.gd" id="2_8h4n6"]
+[ext_resource type="AIWeaponResource" uid="uid://dn7q3t5m8p2k6" path="res://AI_System/resources/shotgun_ai_weapon.tres" id="3_r6m2l"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_1"]
 radius = 0.4
@@ -17,12 +17,11 @@ radius = 25.0
 
 [node name="ShotgunRusher" type="CharacterBody3D" groups=["Enemies"]]
 collision_layer = 64
-collision_mask = 3
+collision_mask = 55
 script = ExtResource("1_5j2k7")
 max_health = 60.0
 move_speed = 6.0
 rotation_speed = 4.0
-detection_range = 30.0
 target_loss_time = 2.0
 weapon_controller = NodePath("WeaponController")
 detection_area = NodePath("DetectionArea")

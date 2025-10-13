@@ -39,6 +39,8 @@ signal Zoom
 @export var auto_fire: bool
 ## The Range that a weapon will fire. Beyong this number no hit will trigger.
 @export var fire_range: int
+## Fire rate in rounds per minute (RPM). Controls how fast the weapon shoots.
+@export var fire_rate: float = 30.0
 
 @export_group("Weapon Behaviour")
 ##If Checked the weapon drop scene MUST be provided
@@ -52,4 +54,3 @@ signal Zoom
 ## Incremental Reload is for shotgun or sigle item loaded weapons where you can interupt the reload process. If true the Calculate_Reload function on the weapon_state_machine must be called indepently. 
 ## For Example: at each step of a shotgun reload the function is called via the animation player.
 @export var incremental_reload: bool = false
-

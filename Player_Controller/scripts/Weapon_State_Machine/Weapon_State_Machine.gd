@@ -23,7 +23,17 @@ var shot_tween
 @export var weapon_stack:Array[WeaponSlot] #An Array of weapons currently in possesion by the player
 var current_weapon_slot: WeaponSlot = null
 
+## Stats modifier system for current weapon
+var weapon_stats: WeaponStatsModifier = null
+var fire_rate_timer: Timer = null
+
 func _ready() -> void:
+	# Initialize fire rate timer
+	fire_rate_timer = Timer.new()
+	fire_rate_timer.wait_time = 2.0  # Default fire interval
+	fire_rate_timer.one_shot = true
+	add_child(fire_rate_timer)
+	
 	if weapon_stack.is_empty():
 		push_error("Weapon Stack is empty, please populate with weapons")
 	else:
@@ -92,9 +102,24 @@ func initialize(_weapon_slot: WeaponSlot):
 		return
 	if _weapon_slot.weapon.weapon_spray:
 		spray_profiles[_weapon_slot.weapon.weapon_name] = _weapon_slot.weapon.weapon_spray.instantiate()
+	
+	# Initialize weapon stats modifier system
+	if not _weapon_slot.has_meta("weapon_stats"):
+		var stats_modifier = WeaponStatsModifier.new()
+		stats_modifier.initialize_from_weapon(_weapon_slot.weapon)
+		_weapon_slot.set_meta("weapon_stats", stats_modifier)
+		print("Initialized weapon stats for: ", _weapon_slot.weapon.weapon_name)
+		stats_modifier.print_stats()  # Debug output
+	
 	connect_weapon_to_hud.emit(_weapon_slot.weapon)
 
 func enter() -> void:
+	# Set up current weapon stats
+	weapon_stats = current_weapon_slot.get_meta("weapon_stats", null)
+	if weapon_stats:
+		# Update fire rate timer
+		fire_rate_timer.wait_time = weapon_stats.get_fire_interval()
+	
 	animation_player.queue(current_weapon_slot.weapon.pick_up_animation)
 	weapon_changed.emit(current_weapon_slot.weapon.weapon_name)
 	update_ammo.emit([current_weapon_slot.current_ammo, current_weapon_slot.reserve_ammo])
@@ -115,12 +140,30 @@ func shot_count_update() -> void:
 	shot_tween.tween_property(self,"_count",0,1)
 	
 func shoot() -> void:
+	# Check fire rate limit (performance optimized) - but skip for auto-fire weapons on manual trigger
+	if not fire_rate_timer.is_stopped() and not current_weapon_slot.weapon.auto_fire:
+		return  # Still in fire rate cooldown
+	
 	if current_weapon_slot.current_ammo != 0 or not current_weapon_slot.weapon.has_ammo:
 		if current_weapon_slot.weapon.incremental_reload and animation_player.current_animation == current_weapon_slot.weapon.reload_animation:
 			animation_player.stop()
 			
 		if not animation_player.is_playing():
-			animation_player.play(current_weapon_slot.weapon.shoot_animation)
+			# Use weapon stats for modified values
+			var anim_speed = weapon_stats.get_animation_speed() if weapon_stats else 1.0
+			print("Shooting with anim speed: ", anim_speed)
+			if weapon_stats:
+				print("Fire rate: ", weapon_stats.final_fire_rate, " RPM")
+			animation_player.play(current_weapon_slot.weapon.shoot_animation, -1, anim_speed)
+			
+			# Start fire rate cooldown
+			if weapon_stats:
+				var fire_interval = weapon_stats.get_fire_interval()
+				print("Fire interval: ", fire_interval, " seconds")
+				fire_rate_timer.start(fire_interval)
+			else:
+				fire_rate_timer.start(2.0)  # Default fallback
+			
 			if current_weapon_slot.weapon.has_ammo:
 				current_weapon_slot.current_ammo -= 1
 				
@@ -138,6 +181,34 @@ func shoot() -> void:
 			load_projectile(Spread)
 	else:
 		reload()
+
+func auto_fire_shoot() -> void:
+	# Auto-fire shooting - bypasses fire rate timer since animation controls timing
+	if current_weapon_slot.current_ammo != 0 or not current_weapon_slot.weapon.has_ammo:
+		if current_weapon_slot.weapon.incremental_reload and animation_player.current_animation == current_weapon_slot.weapon.reload_animation:
+			animation_player.stop()
+			
+		# Use weapon stats for modified values
+		var anim_speed = weapon_stats.get_animation_speed() if weapon_stats else 1.0
+		animation_player.play(current_weapon_slot.weapon.shoot_animation, -1, anim_speed)
+		
+		if current_weapon_slot.weapon.has_ammo:
+			current_weapon_slot.current_ammo -= 1
+			
+		update_ammo.emit([current_weapon_slot.current_ammo, current_weapon_slot.reserve_ammo])
+		
+		if shot_tween:
+			shot_tween.kill()
+		
+		var Spread = Vector2.ZERO
+		
+		if current_weapon_slot.weapon.weapon_spray:
+			_count = _count + 1
+			Spread = spray_profiles[current_weapon_slot.weapon.weapon_name].Get_Spray(_count, current_weapon_slot.weapon.magazine)
+			
+		load_projectile(Spread)
+	else:
+		reload()
 		
 func load_projectile(_spread):
 	var _projectile:Projectile = current_weapon_slot.weapon.projectile_to_load.instantiate()
@@ -148,7 +219,17 @@ func load_projectile(_spread):
 	bullet_point.add_child(_projectile)
 	add_signal_to_hud.emit(_projectile)
 	var bullet_point_origin = bullet_point.global_position
-	_projectile._Set_Projectile(current_weapon_slot.weapon.damage,_spread,current_weapon_slot.weapon.fire_range, bullet_point_origin)
+	
+	# Use modified weapon stats
+	if weapon_stats:
+		print("Using weapon stats - final damage: ", weapon_stats.final_damage)
+	else:
+		print("No weapon stats - using base damage: ", current_weapon_slot.weapon.damage)
+	
+	var damage = weapon_stats.final_damage if weapon_stats else current_weapon_slot.weapon.damage
+	var range = weapon_stats.final_fire_range if weapon_stats else current_weapon_slot.weapon.fire_range
+	print("Final projectile damage: ", damage, " (base: ", current_weapon_slot.weapon.damage, ")")
+	_projectile._Set_Projectile(damage, _spread, range, bullet_point_origin)
 
 func reload() -> void:
 	if current_weapon_slot.current_ammo == current_weapon_slot.weapon.magazine:
@@ -194,7 +275,9 @@ func melee() -> void:
 					hit_successfull.emit()
 					var Direction = (Target.global_transform.origin - owner.global_transform.origin).normalized()
 					var Position =  melee_hitbox.get_collision_point(c)
-					Target.Hit_Successful(current_weapon_slot.weapon.melee_damage, Direction, Position)
+					# Use modified melee damage
+					var melee_damage = weapon_stats.final_melee_damage if weapon_stats else current_weapon_slot.weapon.melee_damage
+					Target.Hit_Successful(melee_damage, Direction, Position)
 			
 func drop(_slot: WeaponSlot) -> void:
 	if _slot.weapon.can_be_dropped and weapon_stack.size() != 1:
@@ -217,9 +300,9 @@ func drop(_slot: WeaponSlot) -> void:
 		
 func _on_animation_finished(anim_name):
 	if anim_name == current_weapon_slot.weapon.shoot_animation:
-		if current_weapon_slot.weapon.auto_fire == true:
-				if Input.is_action_pressed("Shoot"):
-					shoot()
+		# Auto-fire: if weapon supports auto-fire and shoot button is held, shoot again
+		if current_weapon_slot.weapon.auto_fire and Input.is_action_pressed("Shoot"):
+			auto_fire_shoot()  # Use auto-fire function
 
 	if anim_name == current_weapon_slot.weapon.change_animation:
 		change_weapon(next_weapon)
@@ -256,8 +339,28 @@ func _on_pick_up_detection_body_entered(body: RigidBody3D):
 
 func add_ammo(_weapon_slot: WeaponSlot, ammo: int)->int:
 	var weapon = _weapon_slot.weapon
-	var required = weapon.max_ammo - _weapon_slot.reserve_ammo
+	# Use modified max ammo if stats are available
+	var stats = _weapon_slot.get_meta("weapon_stats", null)
+	var max_ammo = stats.final_max_ammo if stats else weapon.max_ammo
+	
+	var required = max_ammo - _weapon_slot.reserve_ammo
 	var remaining = max(ammo - required,0)
 	_weapon_slot.reserve_ammo += min(ammo, required)
 	update_ammo.emit([current_weapon_slot.current_ammo, current_weapon_slot.reserve_ammo])
 	return remaining
+
+## Get current weapon stats modifier (for external access)
+func get_current_weapon_stats() -> WeaponStatsModifier:
+	return weapon_stats
+
+## Add temporary stat modifier to current weapon
+func add_stat_modifier(stat_name: String, additive: float = 0.0, multiplicative: float = 1.0) -> void:
+	if weapon_stats:
+		weapon_stats.add_temporary_modifier(stat_name, additive, multiplicative)
+		# Update fire rate timer if fire rate changed
+		if stat_name == "fire_rate":
+			fire_rate_timer.wait_time = weapon_stats.get_fire_interval()
+		print("Added modifier: ", stat_name, " (+", additive, ", x", multiplicative, ")")
+		weapon_stats.print_stats()
+	else:
+		print("No weapon stats available for modifier")
