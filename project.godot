@@ -13,7 +13,7 @@ config_version=5
 config/name="RevengeOfTheDead"
 run/main_scene="res://Example World/Objects/World/world.tscn"
 config/features=PackedStringArray("4.5", "Forward Plus")
-config/icon="res://Title.png"
+config/icon="uid://bapohsb5052r4"
 
 [filesystem]
 
