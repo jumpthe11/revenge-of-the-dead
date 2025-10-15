@@ -2254,7 +2254,7 @@ mesh = SubResource("ArrayMesh_kn6m3")
 skeleton = NodePath("")
 
 [node name="blasterP2" type="Node3D" parent="Camera/LeanPivot/MainCamera/Weapons_Manager/Weapons_Models"]
-transform = Transform3D(-0.97236997, -0.2334076, -0.0040748655, 0, 0.01745548, -0.999848, 0.23344313, -0.9722221, -0.016973201, 0.32, 1.014, -0.35)
+transform = Transform3D(-0.97236997, -0.23340762, -0.0040748655, 0, 0.01745548, -0.999848, 0.23344313, -0.97222215, -0.016973201, 0.32, 1.014, -0.35)
 visible = false
 
 [node name="blasterP" type="MeshInstance3D" parent="Camera/LeanPivot/MainCamera/Weapons_Manager/Weapons_Models/blasterP2"]

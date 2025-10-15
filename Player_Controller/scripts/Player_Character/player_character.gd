@@ -5,6 +5,19 @@ extends CharacterBody3D
 @export var main_camera:Camera3D
 @export var animation_tree: AnimationTree
 
+# Health System
+signal player_died
+signal player_damaged(current_health: float, max_health: float)
+
+@export_category("Health Parameters")
+@export var max_health: float = 100.0
+@export var health_regeneration: bool = false
+@export var health_regen_rate: float = 5.0  # Health per second
+@export var health_regen_delay: float = 5.0  # Seconds before regen starts after damage
+
+var current_health: float
+var health_regen_timer: float = 0.0
+var is_dead: bool = false
 
 var camera_rotation: Vector2 = Vector2(0.0,0.0)
 var mouse_sensitivity = 0.001
@@ -67,6 +80,11 @@ func _ready() -> void:
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	calculate_movement_parameters()
 	add_to_group("Player")
+	add_to_group("Target")  # Required for projectiles and enemy weapons to hit player
+	
+	# Initialize health system
+	current_health = max_health
+	_update_health_display()
 	
 func update_camera_rotation() -> void:
 	var current_rotation = get_rotation()
@@ -198,6 +216,16 @@ func _process(_delta: float) -> void:
 		subviewport_camera.global_transform = main_camera.global_transform
 		
 func _physics_process(_delta: float) -> void:
+	if is_dead:
+		return
+		
+	# Health regeneration
+	if health_regeneration and current_health < max_health:
+		health_regen_timer += _delta
+		if health_regen_timer >= health_regen_delay:
+			current_health = min(current_health + health_regen_rate * _delta, max_health)
+			_update_health_display()
+	
 	sprint_replenish(_delta)
 	lean_collision()
 	
@@ -266,3 +294,72 @@ func _on_coyote_timer_timeout() -> void:
 
 func on_jump_buffer_timeout()->void:
 	jump_buffer = false
+
+## Take damage - compatible with enemy weapon systems
+func take_damage(damage: float, source: Node = null) -> void:
+	if is_dead:
+		return
+	
+	current_health -= damage
+	current_health = max(current_health, 0.0)
+	
+	# Reset health regen timer
+	health_regen_timer = 0.0
+	
+	_update_health_display()
+	player_damaged.emit(current_health, max_health)
+	
+	if current_health <= 0 and not is_dead:
+		_die()
+
+## Hit_Successful method - required for compatibility with existing weapon system
+func Hit_Successful(damage: float, _Direction: Vector3 = Vector3.ZERO, _Position: Vector3 = Vector3.ZERO) -> void:
+	take_damage(damage)
+	
+	# Optional: Add knockback or screen shake effects here
+	if _Direction != Vector3.ZERO:
+		var knockback_force = _Direction * damage * 0.05
+		velocity += Vector3(knockback_force.x, 0, knockback_force.z)
+
+## Apply knockback to player (called by some enemy attacks)
+func apply_knockback(knockback_vector: Vector3) -> void:
+	velocity += knockback_vector
+
+## Update health display
+func _update_health_display() -> void:
+	# Try to find health bar or health label in HUD
+	var health_bar = get_node_or_null("CanvasLayer/HealthBar")
+	if health_bar and health_bar is Range:
+		health_bar.max_value = max_health
+		health_bar.value = current_health
+	
+	var health_label = get_node_or_null("CanvasLayer/HealthLabel")
+	if health_label and health_label is Label:
+		health_label.text = "Health: " + str(int(current_health)) + "/" + str(int(max_health))
+
+## Called when player dies
+func _die() -> void:
+	is_dead = true
+	player_died.emit()
+	
+	# Disable player controls
+	set_physics_process(false)
+	
+	# Optional: Add death effects, respawn logic, or game over screen
+	print("Player died!")
+
+## Get current health percentage (0.0 to 1.0)
+func get_health_percentage() -> float:
+	return current_health / max_health
+
+## Check if player is alive
+func is_alive() -> bool:
+	return not is_dead
+
+## Heal player
+func heal(amount: float) -> void:
+	if is_dead:
+		return
+	
+	current_health = min(current_health + amount, max_health)
+	_update_health_display()

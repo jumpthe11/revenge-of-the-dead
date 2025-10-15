@@ -3,6 +3,10 @@ class_name Projectile
 
 signal Hit_Successfull
 
+# Store the source of this projectile for damage calculations
+var projectile_source: Node = null
+var damage_type: DamageSystem.DamageType = DamageSystem.DamageType.BULLET
+
 ## Can Be Either A Hit Scan or Rigid Body Projectile. If Rigid body is select a Rigid body must be provided.
 @export_enum ("Hitscan","Rigidbody_Projectile","over_ride") var Projectile_Type: String = "Hitscan"
 @export var Display_Debug_Decal: bool = true
@@ -66,22 +70,17 @@ func Hit_Scan_Collision(Collision: Array,_damage: float, origin_point: Vector3):
 		Load_Decal(Point, Collision[2])
 		
 		if Collision[0].is_in_group("Target"):
-			var Bullet = get_world_3d().direct_space_state
-
 			var Bullet_Direction = (Point - origin_point).normalized()
-			var New_Intersection = PhysicsRayQueryParameters3D.create(origin_point,Point+Bullet_Direction*2)
-			New_Intersection.set_collision_mask(0b11101111)
-			New_Intersection.set_hit_from_inside(false)
-			New_Intersection.set_exclude(hit_objects)
-			var Bullet_Collision = Bullet.intersect_ray(New_Intersection)
-	
-			if Bullet_Collision:
-				Hit_Scan_damage(Bullet_Collision.collider, Bullet_Direction,Bullet_Collision.position,_damage)
-				if pass_through and check_pass_through(Bullet_Collision.collider, Bullet_Collision.rid):
-					var pass_through_collision : Array = [Bullet_Collision.collider, Bullet_Collision.position, Bullet_Collision.normal]
-					var pass_through_damage: float = damage/2
-					Hit_Scan_Collision(pass_through_collision,pass_through_damage,Bullet_Collision.position)
-					return
+			# Damage what the camera raycast hit directly
+			Hit_Scan_damage(Collision[0], Bullet_Direction, Point, _damage)
+			
+			# Handle pass-through if enabled
+			if pass_through and check_pass_through(Collision[0], Collision[0].get_rid()):
+				var pass_through_collision : Array = [Collision[0], Point, Collision[2]]
+				var pass_through_damage: float = damage/2
+				Hit_Scan_Collision(pass_through_collision, pass_through_damage, Point)
+				return
+			
 			queue_free()
 
 func check_pass_through(collider: Node3D, rid: RID)-> bool:
@@ -92,9 +91,18 @@ func check_pass_through(collider: Node3D, rid: RID)-> bool:
 	return valid_pass_though
 
 func Hit_Scan_damage(Collider, Direction, Position, _damage):
-	if Collider.is_in_group("Target") and Collider.has_method("Hit_Successful"):
+	if Collider.is_in_group("Target"):
 		Hit_Successfull.emit()
-		Collider.Hit_Successful(_damage, Direction, Position)
+		# Use DamageSystem for damage calculation
+		DamageSystem.apply_damage_to_target(
+			Collider,
+			_damage,
+			projectile_source,
+			damage_type,
+			Direction,
+			Position,
+			false  # is_headshot - can be enhanced later
+		)
 
 
 func Load_Decal(_pos,_normal):
@@ -126,8 +134,18 @@ func Launch_Rigid_Body_Projectile(Collision_Data, _projectile, _origin_point):
 	cleanup_timer.timeout.connect(_cleanup_projectile.bind(_proj))
 
 func _on_body_entered(body, _proj, _norm):
-	if body.is_in_group("Target") && body.has_method("Hit_Successful"):
-		body.Hit_Successful(damage)
+	if body.is_in_group("Target"):
+		# Use DamageSystem for damage calculation
+		var direction = _proj.linear_velocity.normalized()
+		DamageSystem.apply_damage_to_target(
+			body,
+			damage,
+			projectile_source,
+			damage_type,
+			direction,
+			_proj.global_position,
+			false  # is_headshot
+		)
 		Hit_Successfull.emit()
 
 	Load_Decal(_proj.get_position(),_norm)

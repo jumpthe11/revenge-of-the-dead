@@ -216,6 +216,10 @@ func load_projectile(_spread):
 	_projectile.position = bullet_point.global_position
 	_projectile.rotation = owner.rotation
 	
+	# Set projectile source for damage system
+	_projectile.projectile_source = owner  # The player character
+	_projectile.damage_type = DamageSystem.DamageType.BULLET
+	
 	bullet_point.add_child(_projectile)
 	add_signal_to_hud.emit(_projectile)
 	var bullet_point_origin = bullet_point.global_position
@@ -271,13 +275,21 @@ func melee() -> void:
 			var colliders = melee_hitbox.get_collision_count()
 			for c in colliders:
 				var Target = melee_hitbox.get_collider(c)
-				if Target.is_in_group("Target") and Target.has_method("Hit_Successful"):
+				if Target.is_in_group("Target"):
 					hit_successfull.emit()
 					var Direction = (Target.global_transform.origin - owner.global_transform.origin).normalized()
 					var Position =  melee_hitbox.get_collision_point(c)
-					# Use modified melee damage
+					# Use modified melee damage and damage system
 					var melee_damage = weapon_stats.final_melee_damage if weapon_stats else current_weapon_slot.weapon.melee_damage
-					Target.Hit_Successful(melee_damage, Direction, Position)
+					DamageSystem.apply_damage_to_target(
+						Target,
+						melee_damage,
+						owner,
+						DamageSystem.DamageType.MELEE,
+						Direction,
+						Position,
+						false
+					)
 			
 func drop(_slot: WeaponSlot) -> void:
 	if _slot.weapon.can_be_dropped and weapon_stack.size() != 1:

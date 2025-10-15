@@ -124,9 +124,18 @@ func _melee_attack() -> void:
 	
 	var distance = global_position.distance_to(current_target.global_position)
 	if distance <= melee_range:
-		# Deal damage to target
-		if current_target.has_method("take_damage"):
-			current_target.take_damage(melee_damage, self)
+		# Deal damage to target using DamageSystem
+		if current_target.is_in_group("Target"):
+			var direction = (current_target.global_position - global_position).normalized()
+			DamageSystem.apply_damage_to_target(
+				current_target,
+				melee_damage,
+				self,
+				DamageSystem.DamageType.MELEE,
+				direction,
+				current_target.global_position,
+				false
+			)
 		
 		melee_attack_timer.start()
 		
@@ -209,5 +218,14 @@ func _death_explosion() -> void:
 	var results = space_state.intersect_shape(query)
 	for result in results:
 		var body = result["collider"]
-		if body != self and body.has_method("take_damage"):
-			body.take_damage(explosion_damage, self)
+		if body != self and body.is_in_group("Target"):
+			var direction = (body.global_position - global_position).normalized()
+			DamageSystem.apply_damage_to_target(
+				body,
+				explosion_damage,
+				self,
+				DamageSystem.DamageType.EXPLOSIVE,
+				direction,
+				body.global_position,
+				false
+			)

@@ -127,12 +127,24 @@ func _fire_hitscan_projectile(projectile: Node, spawn_position: Vector3, directi
 	
 	# If it's our custom projectile, use simplified setup
 	if projectile.has_method("_Set_Projectile"):
+		# Set projectile source to AI enemy (parent)
+		if projectile.has("projectile_source"):
+			projectile.projectile_source = get_parent()  # The AI enemy
+		if projectile.has("damage_type"):
+			projectile.damage_type = DamageSystem.DamageType.BULLET
+		
 		var damage = weapon_resource.damage
 		var range_limit = weapon_resource.max_range
 		projectile._Set_Projectile(damage, Vector2.ZERO, range_limit, spawn_position)
 
 func _fire_physics_projectile(projectile: Node, spawn_position: Vector3, direction: Vector3) -> void:
 	projectile.global_position = spawn_position
+	
+	# Set projectile source to AI enemy (parent)
+	if projectile.has("projectile_source"):
+		projectile.projectile_source = get_parent()  # The AI enemy
+	if projectile.has("damage_type"):
+		projectile.damage_type = DamageSystem.DamageType.BULLET
 	
 	# Set velocity for RigidBody projectiles
 	if projectile is RigidBody3D:

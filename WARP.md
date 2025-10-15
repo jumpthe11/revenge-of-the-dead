@@ -113,6 +113,93 @@ The AI System is a performance-optimized enemy framework that uses simplified we
 - **Range-Based Engagement**: Smart distance management
 - **Spread Patterns**: Accuracy simulation without complex calculations
 
+### Advanced Damage System
+**Location**: `Player_Controller/scripts/damage_system.gd`
+
+The game features a comprehensive damage calculation system that handles all damage types, friendly fire, armor, and special mechanics.
+
+**Core Features:**
+- **Damage Type System**: Bullet, Explosive, Melee, Environmental
+- **Source Detection**: Automatically identifies Player, AI Enemy, or Environment sources
+- **Friendly Fire Reduction**: Players deal only 10% damage to other players
+- **Full Damage**: AI ↔ Player interactions deal 100% damage
+- **No AI Friendly Fire**: AI enemies cannot damage each other (0% damage)
+- **Armor System**: Optional armor with diminishing returns and type effectiveness
+- **Critical Hits**: 5% chance for 2x damage
+- **Headshot Multiplier**: 2.5x damage for headshots
+
+**Damage Modifiers:**
+```gdscript
+# Full damage scenarios
+AI → Player: 100% damage
+Player → AI: 100% damage
+Environment → All: 100% damage
+
+# Reduced damage scenarios  
+Player → Player: 10% damage (friendly fire protection)
+AI → AI: 0% damage (no AI friendly fire)
+```
+
+**Armor Effectiveness by Damage Type:**
+- **Bullet Damage**: 100% armor effectiveness
+- **Melee Damage**: 70% armor effectiveness  
+- **Explosive Damage**: 50% armor effectiveness
+- **Environmental Damage**: 30% armor effectiveness
+
+**Usage Example:**
+```gdscript
+# Apply damage through the damage system
+DamageSystem.apply_damage_to_target(
+    target,                           # Target node
+    50.0,                             # Base damage
+    self,                             # Source node
+    DamageSystem.DamageType.BULLET,   # Damage type
+    direction,                        # Hit direction
+    position,                         # Hit position
+    true                              # Is headshot
+)
+
+# Or calculate damage manually
+var final_damage = DamageSystem.calculate_damage(
+    50.0,                             # Base damage
+    source_node,                      # Source
+    target_node,                      # Target
+    DamageSystem.DamageType.EXPLOSIVE # Damage type
+)
+```
+
+### Enemy-Player Combat System
+
+**Damage Compatibility:**
+The game uses a unified damage system compatible between enemies and the player:
+
+**Player Requirements:**
+- Must be in both "Player" and "Target" groups
+- Must implement `Hit_Successful(damage, Direction, Position)` method
+- Must implement `take_damage(damage, source)` method
+- Optional: `apply_knockback(knockback_vector)` method for knockback effects
+- Optional: `get_armor_value()` method for armor system integration
+
+**Enemy Damage Types:**
+1. **Ranged Weapons**: AI uses weapon controller with projectiles that call damage system
+2. **Melee Attacks**: Melee brutes call damage system directly when in range
+3. **Explosions**: Death explosions and area damage use explosive damage type
+4. **All damage** is processed through `DamageSystem` for proper modifiers
+
+**How It Works:**
+- All projectiles track their source (player or AI enemy)
+- When hitting a target, projectiles call `DamageSystem.apply_damage_to_target()`
+- `DamageSystem` calculates final damage based on:
+  - Source type (Player/AI/Environment)
+  - Target type (Player/AI)
+  - Damage type (Bullet/Melee/Explosive/Environmental)
+  - Target armor (if present)
+  - Special modifiers (headshot, critical hit)
+- Applies friendly fire reduction (10% for player-to-player)
+- Prevents AI friendly fire (0% damage)
+- Calls `Hit_Successful()` or `take_damage()` with calculated damage
+- Results in health reduction, knockback, and potential death
+
 ### Available AI Types
 
 #### 🎯 Rifle Soldier (`AIRifleSoldier`)
@@ -172,12 +259,29 @@ The AI System is a performance-optimized enemy framework that uses simplified we
 - **Lean System**: Q/E leaning with collision prevention
 - **Sprint System**: Stamina-based sprinting with cooldown
 - **Jump System**: Calculated jump physics with coyote time
+- **Health System**: Damage, death, and optional regeneration
 
 **Key Parameters**:
 - Sprint speed: 2.0x normal
 - Walk speed: 0.5x normal
 - Jump height: 2.0 units
 - Lean speed: 0.2 seconds
+- Max health: 100 HP
+- Health regeneration: Optional (disabled by default)
+- Regeneration rate: 5 HP/second
+- Regeneration delay: 5 seconds after taking damage
+
+**Health System Methods**:
+- `take_damage(damage: float, source: Node)`: Reduce player health
+- `Hit_Successful(damage, Direction, Position)`: Compatibility method for weapon systems
+- `apply_knockback(knockback_vector: Vector3)`: Apply knockback force to player
+- `heal(amount: float)`: Restore player health
+- `get_health_percentage()`: Returns health as 0.0-1.0 value
+- `is_alive()`: Check if player is still alive
+
+**Health System Signals**:
+- `player_died`: Emitted when player health reaches zero
+- `player_damaged(current_health, max_health)`: Emitted when player takes damage
 
 ### Weapon State Machine
 **Location**: `Player_Controller/scripts/Weapon_State_Machine/Weapon_State_Machine.gd`
@@ -454,7 +558,14 @@ The project uses a organized physics layer system:
 
 ### Recent Updates (2025-10-13)
 
-**Weapon System Fixes:**
+**Repository Reset (Latest):**
+- Performed hard reset to latest GitHub version (commit bac3163)
+- All local changes reverted to restore working state
+- Cleaned up untracked files and modified files
+- Repository now matches remote origin/master exactly
+- Commit message: "Weapon Stats added. Some Hit to ai issues fixed. 2 Different hitbox for each bullet be careful"
+
+**Previous Weapon System Fixes:**
 - Fixed double shooting issues caused by conflicting timer and animation logic
 - Separated manual shooting and auto-fire systems for proper functionality
 - Resolved auto-fire problems where weapons wouldn't fire continuously
