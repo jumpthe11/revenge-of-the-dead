@@ -50,10 +50,14 @@ func _setup_timers() -> void:
 		add_child(burst_timer)
 
 func _setup_projectile_pool() -> void:
+	# Skip projectile pooling for hitscan weapons (we do direct raycasts)
+	if weapon_resource.projectile_type == "Hitscan":
+		return
+		
 	if not weapon_resource.use_projectile_pooling or not weapon_resource.projectile_scene:
 		return
 	
-	# Pre-instantiate projectiles for pooling
+	# Pre-instantiate projectiles for pooling (physics projectiles only)
 	for i in weapon_resource.max_active_projectiles:
 		var projectile = weapon_resource.projectile_scene.instantiate()
 		projectile_pool.append(projectile)
@@ -89,10 +93,6 @@ func fire_at_target(target_position: Vector3) -> bool:
 	return true
 
 func _fire_projectile(target_position: Vector3) -> void:
-	var projectile = _get_projectile()
-	if not projectile:
-		return
-	
 	var spawn_position = fire_point.global_position if fire_point else global_position
 	
 	# Apply accuracy spread
@@ -102,9 +102,11 @@ func _fire_projectile(target_position: Vector3) -> void:
 	# Setup projectile based on type
 	match weapon_resource.projectile_type:
 		"Hitscan":
-			_fire_hitscan_projectile(projectile, spawn_position, direction)
+			_fire_hitscan_direct(spawn_position, direction)
 		"Physics":
-			_fire_physics_projectile(projectile, spawn_position, direction)
+			var projectile = _get_projectile()
+			if projectile:
+				_fire_physics_projectile(projectile, spawn_position, direction)
 
 func _get_projectile() -> Node:
 	var projectile: Node
@@ -124,20 +126,32 @@ func _get_projectile() -> Node:
 	
 	return projectile
 
-func _fire_hitscan_projectile(projectile: Node, spawn_position: Vector3, direction: Vector3) -> void:
-	projectile.global_position = spawn_position
+func _fire_hitscan_direct(spawn_position: Vector3, direction: Vector3) -> void:
+	# Do direct hitscan from AI position
+	var ray_end = spawn_position + direction * weapon_resource.max_range
+	var query = PhysicsRayQueryParameters3D.create(spawn_position, ray_end)
+	query.collision_mask = 0b00000111  # Hit player, objects, world
+	query.exclude = [get_parent()]  # Don't hit self
 	
-	# If it's our custom projectile, use simplified setup
-	if projectile.has_method("_Set_Projectile"):
-		# Set projectile source to AI enemy (parent)
-		if projectile.has("projectile_source"):
-			projectile.projectile_source = get_parent()  # The AI enemy
-		if projectile.has("damage_type"):
-			projectile.damage_type = DamageSystem.DamageType.BULLET
+	var space_state = get_world_3d().direct_space_state
+	var result = space_state.intersect_ray(query)
+	
+	if not result.is_empty():
+		var hit_body = result["collider"]
+		var hit_position = result["position"]
 		
-		var damage = weapon_resource.damage
-		var range_limit = weapon_resource.max_range
-		projectile._Set_Projectile(damage, Vector2.ZERO, range_limit, spawn_position)
+		if hit_body.is_in_group("Target"):
+			# Apply damage using DamageSystem
+			DamageSystem.apply_damage_to_target(
+				hit_body,
+				weapon_resource.damage,
+				get_parent(),  # AI enemy as source
+				DamageSystem.DamageType.BULLET,
+				direction,
+				hit_position,
+				false  # not headshot
+			)
+			target_hit.emit()
 
 func _fire_physics_projectile(projectile: Node, spawn_position: Vector3, direction: Vector3) -> void:
 	projectile.global_position = spawn_position
@@ -183,8 +197,9 @@ func _start_burst_cooldown() -> void:
 		burst_timer.start()
 
 func _on_fire_timer_timeout() -> void:
-	if not weapon_resource.burst_fire or not is_bursting:
-		can_fire = true
+	# In burst mode, allow firing for the next shot in the burst
+	# In non-burst mode, just allow firing again
+	can_fire = true
 
 func _on_burst_timer_timeout() -> void:
 	can_fire = true

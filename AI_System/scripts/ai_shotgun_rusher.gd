@@ -35,14 +35,19 @@ func _setup_shotgun_behavior() -> void:
 	detection_range = detection_range * 1.2
 
 func _combat_movement(delta: float) -> void:
-	if not current_target or not weapon_controller or not weapon_controller.weapon_resource:
+	if not current_target:
 		return
 	
 	var target_position = current_target.global_position
 	var distance = global_position.distance_to(target_position)
 	
+	# Determine optimal range (use weapon range if available, else default)
+	var optimal_range = rush_distance
+	if weapon_controller and weapon_controller.weapon_resource:
+		optimal_range = weapon_controller.weapon_resource.get_optimal_range()
+	
 	# Always rush towards target if not in optimal range
-	if distance > weapon_controller.weapon_resource.get_optimal_range():
+	if distance > optimal_range:
 		is_rushing = true
 		_rush_towards_target(delta)
 	else:

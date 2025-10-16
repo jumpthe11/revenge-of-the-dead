@@ -1,12 +1,17 @@
-[gd_scene load_steps=7 format=3 uid="uid://bgk2q3vg4rjal"]
+[gd_scene load_steps=9 format=3 uid="uid://bgk2q3vg4rjal"]
 
 [ext_resource type="Script" uid="uid://djlhmmkeik2ll" path="res://AI_System/scripts/ai_rifle_soldier.gd" id="1_3k4p8"]
 [ext_resource type="Script" uid="uid://c31b46nb7p6qt" path="res://AI_System/scripts/ai_weapon_controller.gd" id="2_7h3m9"]
-[ext_resource type="AIWeaponResource" uid="uid://bm8p4k2n7q3wa" path="res://AI_System/resources/rifle_ai_weapon.tres" id="3_p4k1n"]
+[ext_resource type="Script" uid="uid://c0nngtv541g5m" path="res://AI_System/scripts/ai_weapon_resource.gd" id="3_xm10k"]
+[ext_resource type="PackedScene" uid="uid://dhebkmfqs0d6r" path="res://Player_Controller/Weapon_Models/blasterL.glb" id="4_rifle_weapon"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_1"]
 
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_1"]
+
+[sub_resource type="Resource" id="Resource_udogp"]
+script = ExtResource("3_xm10k")
+metadata/_custom_type_script = "uid://c0nngtv541g5m"
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_1"]
 radius = 30.0
@@ -27,8 +32,10 @@ mesh = SubResource("CapsuleMesh_1")
 
 [node name="WeaponController" type="Node3D" parent="."]
 script = ExtResource("2_7h3m9")
-weapon_resource = ExtResource("3_p4k1n")
-fire_point = NodePath("FirePoint")
+weapon_resource = SubResource("Resource_udogp")
+
+[node name="WeaponModel" parent="WeaponController" instance=ExtResource("4_rifle_weapon")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.69143885, 0.3, -0.3)
 
 [node name="FirePoint" type="Node3D" parent="WeaponController"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, -0.8)
@@ -37,20 +44,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, -0.8)
 
 [node name="DetectionShape" type="CollisionShape3D" parent="DetectionArea"]
 shape = SubResource("SphereShape3D_1")
-
-[node name="HealthBar" type="ProgressBar" parent="."]
-visible = false
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -25.0
-offset_top = -40.0
-offset_right = 25.0
-offset_bottom = -30.0
-max_value = 75.0
-value = 75.0
 
 [node name="HealthCounter" type="Label3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.3505535, 0)

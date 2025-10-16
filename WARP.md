@@ -556,12 +556,33 @@ The project uses a organized physics layer system:
 - **AI Types**: Rifle soldiers, shotgun rushers, melee brutes
 - **Status**: Active development template with AI support, wave management, and version control
 
+### Recent Updates (2025-10-16)
+
+**AI Resource Loading Fixes:**
+- Fixed custom resource type references in .tres and .tscn files
+- Changed `type="AIWeaponResource"` to `type="Resource"` in scene files (Godot doesn't support custom types in ExtResource)
+- Removed `type="AIWeaponResource"` from .tres resource headers
+- Removed projectile scene dependencies from AI weapons (AI uses direct raycasting, doesn't need player projectile scenes)
+- Set `projectile_scene = null` in weapon resources and changed `load_steps` to 2
+- AI weapon resources now load correctly
+- Fixed shotgun rusher movement - now moves even if weapon resource fails to load
+
+**AI Visual Improvements:**
+- Added weapon models to AI enemies for visual feedback
+- Rifle Soldier holds blasterL (long rifle model)
+- Shotgun Rusher holds blasterD (close-range weapon model)
+- Melee Brute has no weapon (melee only)
+- Weapon models positioned as children of WeaponController node
+
 ### Recent Updates (2025-10-15)
 
 **AI System Critical Bug Fixes:**
 - Fixed AI enemies floating to the sky - added proper gravity application
 - Fixed AI enemies not shooting - multiple issues resolved:
   - Fixed rifle_ai_weapon.tres UID mismatch (scene expected different UID than resource file)
+  - Fixed burst fire logic - fire timer now correctly allows shots within bursts
+  - Replaced player projectile system with direct AI raycast (player projectiles use camera, not world direction)
+  - AI now does direct hitscan from their position instead of using player's camera-based projectiles
   - Added auto-find logic for WeaponController and DetectionArea child nodes
   - Fixed _ready() call order in shotgun_rusher and melee_brute (must call super._ready() first)
   - Added null checks for weapon_controller and weapon_resource in all methods

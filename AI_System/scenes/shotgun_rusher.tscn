@@ -1,8 +1,9 @@
-[gd_scene load_steps=7 format=3 uid="uid://b7xm2lap5qth4"]
+[gd_scene load_steps=9 format=3 uid="uid://b7xm2lap5qth4"]
 
 [ext_resource type="Script" uid="uid://dbxj3k3wasrhe" path="res://AI_System/scripts/ai_shotgun_rusher.gd" id="1_5j2k7"]
 [ext_resource type="Script" uid="uid://c31b46nb7p6qt" path="res://AI_System/scripts/ai_weapon_controller.gd" id="2_8h4n6"]
-[ext_resource type="AIWeaponResource" uid="uid://dn7q3t5m8p2k6" path="res://AI_System/resources/shotgun_ai_weapon.tres" id="3_r6m2l"]
+[ext_resource type="Script" uid="uid://c0nngtv541g5m" path="res://AI_System/scripts/ai_weapon_resource.gd" id="3_mgv84"]
+[ext_resource type="PackedScene" uid="uid://c7sp7l3lsswwa" path="res://Player_Controller/Weapon_Models/blasterD.glb" id="4_shotgun_weapon"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_1"]
 radius = 0.4
@@ -11,6 +12,10 @@ height = 1.8
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_1"]
 radius = 0.4
 height = 1.8
+
+[sub_resource type="Resource" id="Resource_gvrqi"]
+script = ExtResource("3_mgv84")
+metadata/_custom_type_script = "uid://c0nngtv541g5m"
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_1"]
 radius = 25.0
@@ -23,8 +28,6 @@ max_health = 60.0
 move_speed = 6.0
 rotation_speed = 4.0
 target_loss_time = 2.0
-weapon_controller = NodePath("WeaponController")
-detection_area = NodePath("DetectionArea")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 shape = SubResource("CapsuleShape3D_1")
@@ -34,8 +37,10 @@ mesh = SubResource("CapsuleMesh_1")
 
 [node name="WeaponController" type="Node3D" parent="."]
 script = ExtResource("2_8h4n6")
-weapon_resource = ExtResource("3_r6m2l")
-fire_point = NodePath("FirePoint")
+weapon_resource = SubResource("Resource_gvrqi")
+
+[node name="WeaponModel" parent="WeaponController" instance=ExtResource("4_shotgun_weapon")]
+transform = Transform3D(-0.99997693, 0, 0.006789306, 0, 1, 0, -0.006789306, 0, -0.99997693, 0, 0.2, -0.4)
 
 [node name="FirePoint" type="Node3D" parent="WeaponController"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, -0.6)
