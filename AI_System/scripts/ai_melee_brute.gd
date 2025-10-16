@@ -25,13 +25,12 @@ var charge_timer: Timer
 var melee_attack_timer: Timer
 
 func _ready() -> void:
-	_setup_melee_behavior()
-	
 	# Melee brutes are tankier but slower
 	max_health *= 1.5
-	current_health = max_health
 	move_speed *= 0.8  # Slower base speed
+	
 	super._ready()
+	_setup_melee_behavior()
 
 
 func _setup_melee_behavior() -> void:
@@ -71,7 +70,8 @@ func _combat_movement(delta: float) -> void:
 	else:
 		# At melee range, try to attack
 		_melee_attack()
-		velocity = Vector3.ZERO
+		velocity.x = 0
+		velocity.z = 0
 	
 	# Face target
 	_rotate_towards(target_position, delta)
@@ -103,7 +103,8 @@ func _charge_movement(delta: float) -> void:
 	
 	# Charge at high speed
 	var charge_speed = move_speed * charge_speed_multiplier
-	velocity = direction * charge_speed
+	velocity.x = direction.x * charge_speed
+	velocity.z = direction.z * charge_speed
 
 func _move_towards_target_aggressively(delta: float) -> void:
 	if not current_target:
@@ -113,7 +114,8 @@ func _move_towards_target_aggressively(delta: float) -> void:
 	var direction = (target_position - global_position).normalized()
 	
 	# Move faster when not charging but still aggressively
-	velocity = direction * move_speed * 1.2
+	velocity.x = direction.x * move_speed * 1.2
+	velocity.z = direction.z * move_speed * 1.2
 
 func _melee_attack() -> void:
 	if melee_attack_timer.time_left > 0:

@@ -1,4 +1,4 @@
-[gd_resource type="AIWeaponResource" script_class="AIWeaponResource" format=3 uid="uid://dn7q3t5m8p2k6"]
+[gd_resource type="AIWeaponResource" load_steps=3 format=3 uid="uid://dn7q3t5m8p2k6"]
 
 [ext_resource type="Script" path="res://AI_System/scripts/ai_weapon_resource.gd" id="1_ai_weapon_script"]
 [ext_resource type="PackedScene" uid="uid://brvfyahytwd8m" path="res://Player_Controller/Spawnable_Objects/Projectiles_To_Load/shotgun_projectile.tscn" id="2_5j8l3"]

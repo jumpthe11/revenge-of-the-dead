@@ -25,8 +25,10 @@ var burst_timer: Timer
 
 func _ready() -> void:
 	if not weapon_resource:
-		push_error("AI Weapon Controller requires a weapon resource!")
+		push_error("AI Weapon Controller '%s' is missing weapon resource!" % get_parent().name)
 		return
+	
+	print("AI Weapon Controller loaded: %s with resource: %s" % [get_parent().name, weapon_resource.weapon_name])
 	
 	_setup_timers()
 	_setup_projectile_pool()
@@ -199,10 +201,14 @@ func _on_projectile_destroyed(projectile: Node) -> void:
 
 ## Check if weapon can engage target at given distance
 func can_engage_target(distance: float) -> bool:
+	if not weapon_resource:
+		return false
 	return weapon_resource.is_in_range(distance)
 
 ## Get the effective damage at given distance
 func get_damage_at_distance(distance: float) -> int:
+	if not weapon_resource:
+		return 0
 	return weapon_resource.calculate_damage_at_distance(distance)
 
 ## Force cleanup of all active projectiles (for performance)

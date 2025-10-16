@@ -1,4 +1,4 @@
-[gd_resource type="AIWeaponResource" script_class="AIWeaponResource" format=3 uid="uid://bm8p4k2n7q3v9"]
+[gd_resource type="AIWeaponResource" load_steps=3 format=3 uid="uid://bm8p4k2n7q3wa"]
 
 [ext_resource type="Script" path="res://AI_System/scripts/ai_weapon_resource.gd" id="1_ai_weapon_script"]
 [ext_resource type="PackedScene" uid="uid://dc48o4niy1mok" path="res://Player_Controller/Spawnable_Objects/Projectiles_To_Load/basic_hitscan_projectile.tscn" id="2_4k7n2"]

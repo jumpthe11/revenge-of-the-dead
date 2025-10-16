@@ -54,11 +54,13 @@ func _combat_movement(delta: float) -> void:
 		if distance > preferred_distance:
 			# Too far, move closer
 			direction = (target_position - global_position).normalized()
-			velocity = direction * move_speed * 0.6
+			velocity.x = direction.x * move_speed * 0.6
+			velocity.z = direction.z * move_speed * 0.6
 		else:
 			# Too close, back away
 			direction = (global_position - target_position).normalized()
-			velocity = direction * move_speed * 0.4
+			velocity.x = direction.x * move_speed * 0.4
+			velocity.z = direction.z * move_speed * 0.4
 	else:
 		# At good distance, use strafing movement
 		_strafe_movement(delta)
@@ -74,7 +76,8 @@ func _combat_movement(delta: float) -> void:
 func _strafe_movement(delta: float) -> void:
 	# Simple strafing to make AI harder to hit
 	var strafe_direction = Vector3(sin(Time.get_ticks_msec() * 0.001), 0, 0)
-	velocity = strafe_direction * move_speed * 0.3
+	velocity.x = strafe_direction.x * move_speed * 0.3
+	velocity.z = strafe_direction.z * move_speed * 0.3
 
 func _handle_rifle_combat() -> void:
 	if not current_target or not weapon_controller:

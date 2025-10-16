@@ -556,6 +556,29 @@ The project uses a organized physics layer system:
 - **AI Types**: Rifle soldiers, shotgun rushers, melee brutes
 - **Status**: Active development template with AI support, wave management, and version control
 
+### Recent Updates (2025-10-15)
+
+**AI System Critical Bug Fixes:**
+- Fixed AI enemies floating to the sky - added proper gravity application
+- Fixed AI enemies not shooting - multiple issues resolved:
+  - Fixed rifle_ai_weapon.tres UID mismatch (scene expected different UID than resource file)
+  - Added auto-find logic for WeaponController and DetectionArea child nodes
+  - Fixed _ready() call order in shotgun_rusher and melee_brute (must call super._ready() first)
+  - Added null checks for weapon_controller and weapon_resource in all methods
+- Fixed all AI types (Rifle Soldier, Shotgun Rusher, Melee Brute) movement bugs
+- All AI enemies now properly affected by gravity and move correctly on ground
+- Velocity now properly separated into x/z (horizontal) and y (vertical) components
+
+**Pathfinding System:**
+- No pathfinding currently implemented - AI uses direct movement toward player
+- Simple approach is sufficient for open areas and maintains good performance
+- For future implementation with hundreds of enemies:
+  - Stagger pathfinding updates across multiple frames
+  - Use simplified paths for distant enemies
+  - Only use full pathfinding when direct line-of-sight is blocked
+  - Consider NavigationAgent3D with async pathfinding for large enemy counts
+  - Update paths every 0.5-1.0 seconds instead of every frame
+
 ### Recent Updates (2025-10-13)
 
 **Repository Reset (Latest):**

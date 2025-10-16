@@ -21,6 +21,8 @@ signal target_lost
 @export var detection_range: float = 30.0
 ## Time to lose target after losing line of sight
 @export var target_loss_time: float = 3.0
+## Gravity force
+@export var gravity: float = 20.0
 
 @export_group("Components")
 ## Weapon controller for this AI
@@ -62,10 +64,20 @@ func _setup_timers() -> void:
 	add_child(target_loss_timer)
 
 func _setup_weapon_controller() -> void:
+	# Auto-find weapon controller if not set via export
+	if not weapon_controller:
+		weapon_controller = get_node_or_null("WeaponController")
+	
 	if weapon_controller:
 		weapon_controller.target_hit.connect(_on_weapon_hit_target)
+	else:
+		push_warning("AI Enemy '%s' has no weapon controller!" % name)
 
 func _setup_detection() -> void:
+	# Auto-find detection area if not set via export
+	if not detection_area:
+		detection_area = get_node_or_null("DetectionArea")
+	
 	if detection_area:
 		detection_area.body_entered.connect(_on_detection_body_entered)
 		detection_area.body_exited.connect(_on_detection_body_exited)
@@ -73,6 +85,10 @@ func _setup_detection() -> void:
 func _physics_process(delta: float) -> void:
 	if current_state == AIState.DEAD:
 		return
+	
+	# Apply gravity
+	if not is_on_floor():
+		velocity.y -= gravity * delta
 	
 	# Performance: Update different systems on different frames
 	update_counter += 1
@@ -110,10 +126,11 @@ func _verify_target() -> void:
 		_lose_target()
 		return
 	
-	if weapon_controller and weapon_controller.weapon_resource.requires_line_of_sight:
-		if not _has_line_of_sight_to(current_target.global_position):
-			target_loss_timer.start()
-			return
+	if weapon_controller and weapon_controller.weapon_resource:
+		if weapon_controller.weapon_resource.requires_line_of_sight:
+			if not _has_line_of_sight_to(current_target.global_position):
+				target_loss_timer.start()
+				return
 	
 	# Target is valid, update last known position
 	target_last_position = current_target.global_position
@@ -176,8 +193,9 @@ func _move_towards_target(delta: float) -> void:
 	var target_position = current_target.global_position
 	var direction = (target_position - global_position).normalized()
 	
-	# Move towards target
-	velocity = direction * move_speed
+	# Move towards target (only horizontal movement)
+	velocity.x = direction.x * move_speed
+	velocity.z = direction.z * move_speed
 	
 	# Rotate towards target
 	_rotate_towards(target_position, delta)
@@ -192,20 +210,23 @@ func _combat_movement(delta: float) -> void:
 	var distance = global_position.distance_to(target_position)
 	
 	# Stop moving if at optimal range, otherwise adjust
-	if weapon_controller:
+	if weapon_controller and weapon_controller.weapon_resource:
 		var optimal_range = weapon_controller.weapon_resource.get_optimal_range()
 		
 		if distance > optimal_range:
 			# Move closer
 			var direction = (target_position - global_position).normalized()
-			velocity = direction * move_speed * 0.5 # Slower in combat
+			velocity.x = direction.x * move_speed * 0.5 # Slower in combat
+			velocity.z = direction.z * move_speed * 0.5
 		elif distance < weapon_controller.weapon_resource.min_range:
 			# Move away
 			var direction = (global_position - target_position).normalized()
-			velocity = direction * move_speed * 0.3
+			velocity.x = direction.x * move_speed * 0.3
+			velocity.z = direction.z * move_speed * 0.3
 		else:
-			# At good range, just rotate
-			velocity = Vector3.ZERO
+			# At good range, stop horizontal movement
+			velocity.x = 0
+			velocity.z = 0
 	
 	# Always face target in combat
 	_rotate_towards(target_position, delta)

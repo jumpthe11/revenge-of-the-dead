@@ -19,8 +19,8 @@ var double_tap_timer: Timer
 var shots_fired: int = 0
 
 func _ready() -> void:
-	_setup_shotgun_behavior()
 	super._ready()
+	_setup_shotgun_behavior()
 	
 
 func _setup_shotgun_behavior() -> void:
@@ -35,7 +35,7 @@ func _setup_shotgun_behavior() -> void:
 	detection_range = detection_range * 1.2
 
 func _combat_movement(delta: float) -> void:
-	if not current_target:
+	if not current_target or not weapon_controller or not weapon_controller.weapon_resource:
 		return
 	
 	var target_position = current_target.global_position
@@ -64,7 +64,8 @@ func _rush_towards_target(delta: float) -> void:
 	
 	# Rush at high speed
 	var rush_speed = move_speed * rush_speed_multiplier
-	velocity = direction * rush_speed
+	velocity.x = direction.x * rush_speed
+	velocity.z = direction.z * rush_speed
 
 func _aggressive_strafe(delta: float) -> void:
 	if not current_target:
@@ -80,7 +81,8 @@ func _aggressive_strafe(delta: float) -> void:
 	if sin(Time.get_ticks_msec() * 0.002) > 0:
 		strafe_direction = -strafe_direction
 	
-	velocity = strafe_direction * move_speed * 0.8
+	velocity.x = strafe_direction.x * move_speed * 0.8
+	velocity.z = strafe_direction.z * move_speed * 0.8
 
 func _handle_shotgun_combat() -> void:
 	if not current_target or not weapon_controller:
@@ -149,7 +151,8 @@ func _move_towards_target(delta: float) -> void:
 	
 	# Otherwise move normally but faster than base class
 	var direction = (target_position - global_position).normalized()
-	velocity = direction * move_speed * 1.2  # Faster approach
+	velocity.x = direction.x * move_speed * 1.2  # Faster approach
+	velocity.z = direction.z * move_speed * 1.2
 	
 	_rotate_towards(target_position, delta)
 	move_and_slide()
