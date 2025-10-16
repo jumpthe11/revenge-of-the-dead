@@ -156,7 +156,8 @@ func _fire_hitscan_direct(spawn_position: Vector3, direction: Vector3) -> void:
 	
 	# Spawn bullet trail for visual feedback (enemy bullets are red)
 	if BulletTrailManager:
-		BulletTrailManager.spawn_trail(spawn_position, hit_position, Color(1.0, 0.2, 0.2, 1.0))
+		var ai_bullet_speed = 400.0  # Slightly slower for visibility
+		BulletTrailManager.spawn_trail(spawn_position, hit_position, Color(1.0, 0.2, 0.2, 1.0), ai_bullet_speed)
 
 func _fire_physics_projectile(projectile: Node, spawn_position: Vector3, direction: Vector3) -> void:
 	projectile.global_position = spawn_position

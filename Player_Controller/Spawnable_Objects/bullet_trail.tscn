@@ -1,9 +1,7 @@
 [gd_scene load_steps=2 format=3 uid="uid://c8jnax5hq2lv1"]
 
-[ext_resource type="Script" path="res://Player_Controller/scripts/Projectiles/bullet_trail.gd" id="1_trail"]
+[ext_resource type="Script" uid="uid://rvwopyvlpg5l" path="res://Player_Controller/scripts/Projectiles/bullet_trail.gd" id="1_trail"]
 
 [node name="BulletTrail" type="MeshInstance3D"]
 script = ExtResource("1_trail")
-trail_width = 0.02
-trail_lifetime = 0.15
-trail_color = Color(1, 0.8, 0.3, 1)
+trail_lifetime = 4.0

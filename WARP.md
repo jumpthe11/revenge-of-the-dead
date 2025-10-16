@@ -41,7 +41,8 @@ Player_Controller/
 │   ├── Player_Character/       # Core player movement and camera
 │   ├── Projectiles/           # Bullet and projectile systems
 │   │   ├── Projectile.gd      # Base projectile class
-│   │   ├── bullet_trail.gd    # Visual trail effect
+│   │   ├── bullet_trail.gd    # Visual trail effect (shader-based)
+│   │   ├── bullet_trail.gdshader  # Custom shader for trail animation
 │   │   ├── bullet_trail_manager.gd  # Trail pooling system
 │   │   └── projectile_trail_emitter.gd  # Rigid body trail emitter
 │   └── Weapon_State_Machine/  # Weapon management system
@@ -594,11 +595,15 @@ The project uses a organized physics layer system:
 ### Recent Updates (2025-10-16)
 
 **Bullet Trail System:**
-- Added visual bullet trails for all weapons (hitscan and projectile)
-- Implemented performance-optimized trail pooling system
-- Trail manager prevents constant node creation/destruction
+- **Shader-Based Animation**: Trails use custom shader for GPU-accelerated animation (zero mesh recreation)
+- **Performance Optimized**: Mesh created once per bullet, only shader uniforms updated per frame
+- Animated bullet trails that grow from barrel to target via shader reveal effect
+- Gradient fade: transparent at barrel → opaque at bullet tip (realistic tracer effect)
+- Configurable bullet speed per weapon (300-800 m/s visual simulation)
+- Trails animate based on distance and speed (no physics projectiles needed)
+- Object pooling prevents constant node creation/destruction
 - Configurable trail colors: yellow for player, red for enemies
-- Automatic fade-out over 0.15 seconds
+- Automatic fade-out over 0.15 seconds after reaching target
 - Support for both hitscan and rigid body projectiles
 - Max 100 active trails with pool of 50 pre-instantiated instances
 - Trail emitter component for physics projectiles

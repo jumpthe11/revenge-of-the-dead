@@ -35,7 +35,7 @@ func _create_new_trail() -> BulletTrail:
 	return trail
 
 ## Spawn a bullet trail from start to end position
-func spawn_trail(from: Vector3, to: Vector3, color: Color = Color(1.0, 0.8, 0.3, 1.0)) -> void:
+func spawn_trail(from: Vector3, to: Vector3, color: Color = Color(1.0, 0.8, 0.3, 1.0), bullet_speed: float = 500.0) -> void:
 	if not is_initialized:
 		return
 	
@@ -71,6 +71,7 @@ func spawn_trail(from: Vector3, to: Vector3, color: Color = Color(1.0, 0.8, 0.3,
 	# Setup and activate trail
 	trail.reset()
 	trail.trail_color = color
+	trail.bullet_speed = bullet_speed
 	trail.setup_trail(from, to)
 	trail.visible = true
 	trail.set_process(true)  # Enable processing

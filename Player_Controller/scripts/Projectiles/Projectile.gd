@@ -12,6 +12,7 @@ var damage_type: DamageSystem.DamageType = DamageSystem.DamageType.BULLET
 @export var Display_Debug_Decal: bool = true
 @export var show_bullet_trail: bool = true
 @export var bullet_trail_color: Color = Color(1.0, 0.8, 0.3, 1.0)
+@export var simulated_bullet_speed: float = 500.0  # Visual bullet speed m/s (Pistol=300, Rifle=500, Sniper=800)
 
 @export_category("Rigid Body Projectile Properties")
 @export var Projectile_Velocity: int
@@ -71,7 +72,7 @@ func Hit_Scan_Collision(Collision: Array,_damage: float, origin_point: Vector3):
 	
 	# Spawn bullet trail for visual feedback
 	if show_bullet_trail and BulletTrailManager:
-		BulletTrailManager.spawn_trail(origin_point, Point, bullet_trail_color)
+		BulletTrailManager.spawn_trail(origin_point, Point, bullet_trail_color, simulated_bullet_speed)
 	
 	if Collision[0]:
 		Load_Decal(Point, Collision[2])
