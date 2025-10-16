@@ -136,9 +136,10 @@ func _fire_hitscan_direct(spawn_position: Vector3, direction: Vector3) -> void:
 	var space_state = get_world_3d().direct_space_state
 	var result = space_state.intersect_ray(query)
 	
+	var hit_position = ray_end
 	if not result.is_empty():
 		var hit_body = result["collider"]
-		var hit_position = result["position"]
+		hit_position = result["position"]
 		
 		if hit_body.is_in_group("Target"):
 			# Apply damage using DamageSystem
@@ -152,6 +153,10 @@ func _fire_hitscan_direct(spawn_position: Vector3, direction: Vector3) -> void:
 				false  # not headshot
 			)
 			target_hit.emit()
+	
+	# Spawn bullet trail for visual feedback (enemy bullets are red)
+	if BulletTrailManager:
+		BulletTrailManager.spawn_trail(spawn_position, hit_position, Color(1.0, 0.2, 0.2, 1.0))
 
 func _fire_physics_projectile(projectile: Node, spawn_position: Vector3, direction: Vector3) -> void:
 	projectile.global_position = spawn_position

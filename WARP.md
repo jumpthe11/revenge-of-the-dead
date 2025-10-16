@@ -40,11 +40,16 @@ Player_Controller/
 ├── scripts/
 │   ├── Player_Character/       # Core player movement and camera
 │   ├── Projectiles/           # Bullet and projectile systems
+│   │   ├── Projectile.gd      # Base projectile class
+│   │   ├── bullet_trail.gd    # Visual trail effect
+│   │   ├── bullet_trail_manager.gd  # Trail pooling system
+│   │   └── projectile_trail_emitter.gd  # Rigid body trail emitter
 │   └── Weapon_State_Machine/  # Weapon management system
 ├── Spawnable_Objects/         # Instantiable game objects
 │   ├── Clips/                 # Weapon ammunition clips
 │   ├── Projectiles_To_Load/   # Different projectile types
 │   ├── SprayProfiles/         # Weapon spread patterns
+│   ├── bullet_trail.tscn      # Bullet trail scene
 │   └── Weapons/               # Individual weapon instances
 └── player_character.tscn      # Main player scene
 ```
@@ -300,6 +305,36 @@ The game uses a unified damage system compatible between enemies and the player:
 - **Projectile**: Physics-based projectiles (rockets, grenades)
 - **Melee**: Close-combat weapons with hitbox detection
 - **Shotgun**: Spread-pattern weapons with multiple projectiles
+
+### Bullet Trail System
+**Location**: `Player_Controller/scripts/Projectiles/bullet_trail.gd`, `bullet_trail_manager.gd`
+
+The game features a performance-optimized visual bullet trail system that helps players and enemies see where bullets are traveling.
+
+**Key Features:**
+- **Object Pooling**: Pre-instantiated trail nodes prevent constant creation/destruction
+- **Automatic Fade-Out**: Trails fade over time (default 0.15 seconds)
+- **Color Coding**: Player bullets (yellow), enemy bullets (red)
+- **Hitscan Support**: Instant trail rendering for hitscan weapons
+- **Rigid Body Support**: Trail emitter for physics projectiles
+- **Performance Optimized**: Max 100 active trails, pooled trail instances
+
+**Trail Manager Configuration:**
+```gdscript
+BulletTrailManager.pool_size = 50           # Pre-instantiated trails
+BulletTrailManager.max_active_trails = 100  # Maximum active at once
+```
+
+**Usage Example:**
+```gdscript
+# Spawn a bullet trail from weapon to hit point
+BulletTrailManager.spawn_trail(weapon_position, hit_position, Color(1.0, 0.8, 0.3))
+```
+
+**Integration:**
+- **Player Hitscan**: Automatically spawns trails in `Projectile.gd`
+- **AI Hitscan**: Automatically spawns trails in `ai_weapon_controller.gd`
+- **Rigid Body**: Add `ProjectileTrailEmitter` as child node to projectile scenes
 
 ### Weapon Resource System
 **Location**: `Player_Controller/scripts/Weapon_State_Machine/weapon_resource.gd`
@@ -557,6 +592,16 @@ The project uses a organized physics layer system:
 - **Status**: Active development template with AI support, wave management, and version control
 
 ### Recent Updates (2025-10-16)
+
+**Bullet Trail System:**
+- Added visual bullet trails for all weapons (hitscan and projectile)
+- Implemented performance-optimized trail pooling system
+- Trail manager prevents constant node creation/destruction
+- Configurable trail colors: yellow for player, red for enemies
+- Automatic fade-out over 0.15 seconds
+- Support for both hitscan and rigid body projectiles
+- Max 100 active trails with pool of 50 pre-instantiated instances
+- Trail emitter component for physics projectiles
 
 **AI Resource Loading Fixes:**
 - Fixed custom resource type references in .tres and .tscn files

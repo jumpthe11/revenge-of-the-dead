@@ -10,6 +10,8 @@ var damage_type: DamageSystem.DamageType = DamageSystem.DamageType.BULLET
 ## Can Be Either A Hit Scan or Rigid Body Projectile. If Rigid body is select a Rigid body must be provided.
 @export_enum ("Hitscan","Rigidbody_Projectile","over_ride") var Projectile_Type: String = "Hitscan"
 @export var Display_Debug_Decal: bool = true
+@export var show_bullet_trail: bool = true
+@export var bullet_trail_color: Color = Color(1.0, 0.8, 0.3, 1.0)
 
 @export_category("Rigid Body Projectile Properties")
 @export var Projectile_Velocity: int
@@ -66,6 +68,11 @@ func Camera_Ray_Cast(_spread: Vector2 = Vector2.ZERO, _range: float = 1000):
 
 func Hit_Scan_Collision(Collision: Array,_damage: float, origin_point: Vector3):
 	var Point = Collision[1]
+	
+	# Spawn bullet trail for visual feedback
+	if show_bullet_trail and BulletTrailManager:
+		BulletTrailManager.spawn_trail(origin_point, Point, bullet_trail_color)
+	
 	if Collision[0]:
 		Load_Decal(Point, Collision[2])
 		
