@@ -6,6 +6,7 @@ class_name BulletTrail
 
 @export var trail_width: float = 0.02
 @export var trail_lifetime: float = 0.15  # How long trail stays visible
+@export var trail_length: float = 0.3  # Length of visible trail behind bullet
 @export var trail_color: Color = Color(1.0, 0.8, 0.3, 1.0)  # Yellow-ish bullet color
 @export var bullet_speed: float = 500.0  # Simulated bullet speed in m/s
 
@@ -38,6 +39,7 @@ func setup_trail(from: Vector3, to: Vector3) -> void:
 		if shader_material:
 			shader_material.set_shader_parameter("travel_progress", 0.0)
 			shader_material.set_shader_parameter("fade_alpha", 1.0)
+			shader_material.set_shader_parameter("trail_length", trail_length)
 
 func _setup_shader_material() -> void:
 	# Load shader and create material
@@ -50,6 +52,7 @@ func _setup_shader_material() -> void:
 		# Set default parameters
 		shader_material.set_shader_parameter("travel_progress", 1.0)
 		shader_material.set_shader_parameter("fade_alpha", 1.0)
+		shader_material.set_shader_parameter("trail_length", trail_length)
 		shader_material.set_shader_parameter("trail_color", trail_color)
 
 func _create_trail_mesh() -> void:
@@ -149,4 +152,5 @@ func reset() -> void:
 	if shader_material:
 		shader_material.set_shader_parameter("travel_progress", 1.0)
 		shader_material.set_shader_parameter("fade_alpha", 1.0)
+		shader_material.set_shader_parameter("trail_length", trail_length)
 		shader_material.set_shader_parameter("trail_color", trail_color)
