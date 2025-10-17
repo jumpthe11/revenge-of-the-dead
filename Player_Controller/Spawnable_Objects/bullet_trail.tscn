@@ -4,5 +4,5 @@
 
 [node name="BulletTrail" type="MeshInstance3D"]
 script = ExtResource("1_trail")
-trail_lifetime = 4.0
+trail_lifetime = 0.3
 trail_color = Color(0.952313, 0.89857274, 0.67084676, 1)

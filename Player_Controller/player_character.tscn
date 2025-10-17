@@ -2132,6 +2132,16 @@ text = "Weapon Stack:"
 [node name="WeaponStack" type="Label" parent="CanvasLayer/debug_hud/HBoxContainer3"]
 layout_mode = 2
 
+[node name="HBoxContainer4" type="HBoxContainer" parent="CanvasLayer/debug_hud"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="CanvasLayer/debug_hud/HBoxContainer4"]
+layout_mode = 2
+text = "Weapon Stats:"
+
+[node name="WeaponStats" type="Label" parent="CanvasLayer/debug_hud/HBoxContainer4"]
+layout_mode = 2
+
 [node name="MainSight" type="TextureRect" parent="CanvasLayer"]
 anchors_preset = 15
 anchor_right = 1.0
@@ -2343,15 +2353,16 @@ one_shot = true
 script = ExtResource("9_giihu")
 weapon_state_machine = NodePath("../Camera/LeanPivot/MainCamera/Weapons_Manager")
 player_character = NodePath("..")
-fire_rate_multiplier = 50.0
+fire_rate_multiplier = 500.0
 
 [connection signal="timeout" from="CanvasLayer/HitSight/HitSightTimer" to="CanvasLayer" method="_on_hit_sight_timer_timeout"]
 [connection signal="add_signal_to_hud" from="Camera/LeanPivot/MainCamera/Weapons_Manager" to="CanvasLayer" method="_on_weapons_manager_add_signal_to_hud"]
 [connection signal="connect_weapon_to_hud" from="Camera/LeanPivot/MainCamera/Weapons_Manager" to="CanvasLayer" method="_on_weapons_manager_connect_weapon_to_hud"]
+[connection signal="debug_message" from="Camera/LeanPivot/MainCamera/Weapons_Manager" to="CanvasLayer" method="_on_weapons_manager_debug_message"]
 [connection signal="hit_successfull" from="Camera/LeanPivot/MainCamera/Weapons_Manager" to="CanvasLayer" method="_on_weapons_manager_hit_successfull"]
 [connection signal="update_ammo" from="Camera/LeanPivot/MainCamera/Weapons_Manager" to="CanvasLayer" method="_on_weapons_manager_update_ammo"]
 [connection signal="update_weapon_stack" from="Camera/LeanPivot/MainCamera/Weapons_Manager" to="CanvasLayer" method="_on_weapons_manager_update_weapon_stack"]
 [connection signal="weapon_changed" from="Camera/LeanPivot/MainCamera/Weapons_Manager" to="CanvasLayer" method="_on_weapons_manager_weapon_changed"]
+[connection signal="weapon_stats_updated" from="Camera/LeanPivot/MainCamera/Weapons_Manager" to="CanvasLayer" method="_on_weapons_manager_weapon_stats_updated"]
 [connection signal="body_entered" from="PickUpDetection" to="Camera/LeanPivot/MainCamera/Weapons_Manager" method="_on_pick_up_detection_body_entered"]
-[connection signal="timeout" from="SprintTimer" to="." method="_on_sprint_timer_timeout"]
 [connection signal="timeout" from="CoyoteTimer" to="." method="_on_coyote_timer_timeout"]

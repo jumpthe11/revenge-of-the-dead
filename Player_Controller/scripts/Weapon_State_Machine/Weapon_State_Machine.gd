@@ -7,6 +7,7 @@ signal hit_successfull
 signal add_signal_to_hud
 
 signal connect_weapon_to_hud
+signal weapon_stats_updated(stats: WeaponStatsModifier)
 
 @export var animation_player: AnimationPlayer
 @export var melee_hitbox: ShapeCast3D
@@ -26,6 +27,14 @@ var current_weapon_slot: WeaponSlot = null
 ## Stats modifier system for current weapon
 var weapon_stats: WeaponStatsModifier = null
 var fire_rate_timer: Timer = null
+
+## Called when weapon stats change (from modifiers, buffs, etc)
+func _on_weapon_stats_changed() -> void:
+	if weapon_stats:
+		# Update fire rate timer with new interval
+		fire_rate_timer.wait_time = weapon_stats.get_fire_interval()
+		# Notify HUD
+		weapon_stats_updated.emit(weapon_stats)
 
 func _ready() -> void:
 	# Initialize fire rate timer
@@ -108,8 +117,6 @@ func initialize(_weapon_slot: WeaponSlot):
 		var stats_modifier = WeaponStatsModifier.new()
 		stats_modifier.initialize_from_weapon(_weapon_slot.weapon)
 		_weapon_slot.set_meta("weapon_stats", stats_modifier)
-		print("Initialized weapon stats for: ", _weapon_slot.weapon.weapon_name)
-		stats_modifier.print_stats()  # Debug output
 	
 	connect_weapon_to_hud.emit(_weapon_slot.weapon)
 
@@ -119,13 +126,22 @@ func enter() -> void:
 	if weapon_stats:
 		# Update fire rate timer
 		fire_rate_timer.wait_time = weapon_stats.get_fire_interval()
+		
+		# Connect to stats changes so HUD auto-updates
+		if not weapon_stats.stats_changed.is_connected(_on_weapon_stats_changed):
+			weapon_stats.stats_changed.connect(_on_weapon_stats_changed)
 	
 	animation_player.queue(current_weapon_slot.weapon.pick_up_animation)
 	weapon_changed.emit(current_weapon_slot.weapon.weapon_name)
 	update_ammo.emit([current_weapon_slot.current_ammo, current_weapon_slot.reserve_ammo])
+	weapon_stats_updated.emit(weapon_stats)
 
 func exit(_next_weapon: WeaponSlot) -> void:
 	if _next_weapon != current_weapon_slot:
+		# Disconnect from old weapon stats
+		if weapon_stats and weapon_stats.stats_changed.is_connected(_on_weapon_stats_changed):
+			weapon_stats.stats_changed.disconnect(_on_weapon_stats_changed)
+		
 		if animation_player.get_current_animation() != current_weapon_slot.weapon.change_animation:
 			animation_player.queue(current_weapon_slot.weapon.change_animation)
 			next_weapon = _next_weapon
@@ -151,15 +167,11 @@ func shoot() -> void:
 		if not animation_player.is_playing():
 			# Use weapon stats for modified values
 			var anim_speed = weapon_stats.get_animation_speed() if weapon_stats else 1.0
-			print("Shooting with anim speed: ", anim_speed)
-			if weapon_stats:
-				print("Fire rate: ", weapon_stats.final_fire_rate, " RPM")
 			animation_player.play(current_weapon_slot.weapon.shoot_animation, -1, anim_speed)
 			
 			# Start fire rate cooldown
 			if weapon_stats:
 				var fire_interval = weapon_stats.get_fire_interval()
-				print("Fire interval: ", fire_interval, " seconds")
 				fire_rate_timer.start(fire_interval)
 			else:
 				fire_rate_timer.start(2.0)  # Default fallback
@@ -225,14 +237,8 @@ func load_projectile(_spread):
 	var bullet_point_origin = bullet_point.global_position
 	
 	# Use modified weapon stats
-	if weapon_stats:
-		print("Using weapon stats - final damage: ", weapon_stats.final_damage)
-	else:
-		print("No weapon stats - using base damage: ", current_weapon_slot.weapon.damage)
-	
 	var damage = weapon_stats.final_damage if weapon_stats else current_weapon_slot.weapon.damage
 	var range = weapon_stats.final_fire_range if weapon_stats else current_weapon_slot.weapon.fire_range
-	print("Final projectile damage: ", damage, " (base: ", current_weapon_slot.weapon.damage, ")")
 	_projectile._Set_Projectile(damage, _spread, range, bullet_point_origin)
 
 func reload() -> void:
@@ -369,10 +375,4 @@ func get_current_weapon_stats() -> WeaponStatsModifier:
 func add_stat_modifier(stat_name: String, additive: float = 0.0, multiplicative: float = 1.0) -> void:
 	if weapon_stats:
 		weapon_stats.add_temporary_modifier(stat_name, additive, multiplicative)
-		# Update fire rate timer if fire rate changed
-		if stat_name == "fire_rate":
-			fire_rate_timer.wait_time = weapon_stats.get_fire_interval()
-		print("Added modifier: ", stat_name, " (+", additive, ", x", multiplicative, ")")
-		weapon_stats.print_stats()
-	else:
-		print("No weapon stats available for modifier")
+		# Stats will auto-update via stats_changed signal

@@ -3,6 +3,7 @@ extends CanvasLayer
 @onready var current_weapon_label = $debug_hud/HBoxContainer/CurrentWeapon
 @onready var current_ammo_label = $debug_hud/HBoxContainer2/CurrentAmmo
 @onready var current_weapon_stack = $debug_hud/HBoxContainer3/WeaponStack
+@onready var current_weapon_stats = $debug_hud/HBoxContainer4/WeaponStats
 @onready var hit_sight = $HitSight
 @onready var hit_sight_timer = $HitSight/HitSightTimer
 @onready var overLay = $Overlay
@@ -35,4 +36,17 @@ func load_over_lay_texture(Active:bool, txtr: Texture2D = null):
 func _on_weapons_manager_connect_weapon_to_hud(_weapon_resouce: WeaponResource):
 	_weapon_resouce.update_overlay.connect(load_over_lay_texture)
 
-
+func _on_weapons_manager_weapon_stats_updated(stats: WeaponStatsModifier) -> void:
+	if not stats:
+		current_weapon_stats.text = "No Stats"
+		return
+	
+	var stats_text = ""
+	stats_text += "Damage: %.1f (%.1f)\n" % [stats.final_damage, stats.base_damage]
+	stats_text += "Fire Rate: %.1f RPM (%.1f)\n" % [stats.final_fire_rate, stats.base_fire_rate]
+	stats_text += "Magazine: %d (%d)\n" % [stats.final_magazine, stats.base_magazine]
+	stats_text += "Range: %.0f (%.0f)\n" % [stats.final_fire_range, stats.base_fire_range]
+	stats_text += "Reload: %.2fs\n" % stats.final_reload_time
+	stats_text += "Anim Speed: %.2fx" % stats.animation_speed_multiplier
+	
+	current_weapon_stats.text = stats_text

@@ -214,8 +214,7 @@ func _on_rapid_fire() -> void:
 	
 	weapon_state_machine.load_projectile(spread)
 	
-	# Emit hit signal
-	weapon_state_machine.hit_successfull.emit()
+	# Don't emit hit signal here - the projectile will emit it when it actually hits something
 
 func _apply_player_buffs() -> void:
 	if not player_character:

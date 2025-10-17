@@ -13,8 +13,24 @@ func _on_body_entered(_body, _proj, _norm):
 		var damage_target = explosion.get_collider(t)
 		var collision_point: Vector3 = explosion.get_collision_point(t)
 		var collision_normal: Vector3 = explosion.get_collision_normal(t)
-		var hit_scan_array = [damage_target,collision_point,collision_normal]
-		Hit_Scan_Collision(hit_scan_array,damage,collision_location)
+		
+		# Calculate direction from explosion center to target for knockback
+		var explosion_direction = (collision_point - collision_location).normalized()
+		
+		# Apply explosive damage directly using DamageSystem
+		if damage_target.is_in_group("Target"):
+			DamageSystem.apply_damage_to_target(
+				damage_target,
+				damage,
+				projectile_source,
+				DamageSystem.DamageType.EXPLOSIVE,
+				explosion_direction,
+				collision_point,
+				false  # not headshot
+			)
+			
+		# Visual feedback
+		Load_Decal(collision_point, collision_normal)
 	
 	_proj.queue_free()
 	Projectiles_Spawned.erase(_proj)

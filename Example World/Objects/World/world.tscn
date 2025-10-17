@@ -1,4 +1,4 @@
-[gd_scene load_steps=53 format=3 uid="uid://dniyrkkdwf3cb"]
+[gd_scene load_steps=52 format=3 uid="uid://dniyrkkdwf3cb"]
 
 [ext_resource type="PackedScene" uid="uid://bwc28g513sfim" path="res://Example World/Objects/World/box_1.tscn" id="2_a2qm0"]
 [ext_resource type="PackedScene" uid="uid://bo6viygofawpl" path="res://Example World/Objects/World/target.tscn" id="3_11x65"]
@@ -21,8 +21,7 @@
 [ext_resource type="PackedScene" uid="uid://dwgt7gwe3gfyy" path="res://Player_Controller/Spawnable_Objects/Weapons/blasterQ.tscn" id="12_x6ydo"]
 [ext_resource type="Resource" uid="uid://dgayjkjx4mckc" path="res://Player_Controller/scripts/Weapon_State_Machine/Weapon_Resources/blasterQ.tres" id="13_xqfky"]
 [ext_resource type="Shader" uid="uid://kfuretb65505" path="res://Example World/Objects/World/world.tres" id="19_cthwv"]
-[ext_resource type="PackedScene" uid="uid://b7xm2lap5qth4" path="res://AI_System/scenes/shotgun_rusher.tscn" id="23_dsok1"]
-[ext_resource type="PackedScene" uid="uid://bgk2q3vg4rjal" path="res://AI_System/scenes/rifle_soldier.tscn" id="23_mjfr4"]
+[ext_resource type="PackedScene" uid="uid://bisryopsstrl4" path="res://AI_System/scenes/melee_brute.tscn" id="22_qwr1n"]
 
 [sub_resource type="Resource" id="Resource_t8nnn"]
 script = ExtResource("5_khw4j")
@@ -622,8 +621,5 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.33112, 3.06818, 19.9151)
 [node name="box10" parent="physics_objects" instance=ExtResource("2_a2qm0")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.1989, 3.06818, 19.9151)
 
-[node name="RifleSoldier" parent="." instance=ExtResource("23_mjfr4")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.129685, 2.3829298, 6.6653357)
-
-[node name="ShotgunRusher" parent="." instance=ExtResource("23_dsok1")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.264241, 2.282929, 8.28945)
+[node name="MeleeBrute" parent="." instance=ExtResource("22_qwr1n")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.376521, 0)

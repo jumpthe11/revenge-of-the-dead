@@ -114,7 +114,7 @@ func Hit_Scan_damage(Collider, Direction, Position, _damage):
 
 
 func Load_Decal(_pos,_normal):
-	if Display_Debug_Decal:
+	if Display_Debug_Decal and _normal != null:
 		var rd = Debug_Bullet.instantiate()
 		var world = get_tree().get_root()
 		world.add_child(rd)

@@ -81,6 +81,7 @@ func recalculate_stats() -> void:
 	# Calculate animation speed and fire interval
 	calculate_animation_speed()
 	
+	# Emit signal so listeners (like weapon state machine) know stats changed
 	stats_changed.emit()
 
 ## Calculate animation speed based on fire rate (optimized for performance)

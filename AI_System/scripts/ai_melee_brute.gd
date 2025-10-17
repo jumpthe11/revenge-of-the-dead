@@ -26,7 +26,7 @@ var melee_attack_timer: Timer
 
 func _ready() -> void:
 	# Melee brutes are tankier but slower
-	max_health *= 1.5
+	max_health *= 50
 	move_speed *= 0.8  # Slower base speed
 	
 	super._ready()
