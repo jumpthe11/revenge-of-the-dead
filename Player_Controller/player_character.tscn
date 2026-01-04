@@ -15,13 +15,16 @@
 [sub_resource type="ImageTexture" id="ImageTexture_j4t2g"]
 
 [sub_resource type="StyleBoxLine" id="StyleBoxLine_8ilid"]
+content_margin_left = 5.0
 color = Color(0, 0, 0, 0)
 grow_begin = 6.0
 thickness = 6
+vertical = true
 
 [sub_resource type="StyleBoxLine" id="StyleBoxLine_drrrm"]
 color = Color(1, 1, 1, 1)
 thickness = 10
+vertical = true
 
 [sub_resource type="Resource" id="Resource_4pcyg"]
 script = ExtResource("6_wj0qi")
@@ -2034,6 +2037,7 @@ animation = &"lean_right_collision"
 [sub_resource type="AnimationNodeBlend2" id="AnimationNodeBlend2_nrrb5"]
 
 [sub_resource type="AnimationNodeBlendTree" id="AnimationNodeBlendTree_5pepu"]
+graph_offset = Vector2(-405.652, 466.55536)
 nodes/output/position = Vector2(980, 260)
 nodes/Crouch_Blend/node = SubResource("AnimationNodeBlend3_ryreg")
 nodes/Crouch_Blend/position = Vector2(500, 140)
@@ -2167,26 +2171,6 @@ stretch_mode = 3
 wait_time = 0.05
 one_shot = true
 
-[node name="SprintBar" type="HSlider" parent="CanvasLayer"]
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -150.0
-offset_top = -100.0
-offset_right = 150.0
-grow_horizontal = 2
-grow_vertical = 0
-size_flags_vertical = 8
-theme_override_icons/grabber = SubResource("ImageTexture_rj3p7")
-theme_override_icons/grabber_disabled = SubResource("ImageTexture_j4t2g")
-theme_override_styles/slider = SubResource("StyleBoxLine_8ilid")
-theme_override_styles/grabber_area = SubResource("StyleBoxLine_drrrm")
-value = 100.0
-editable = false
-scrollable = false
-
 [node name="SubViewportContainer" type="SubViewportContainer" parent="CanvasLayer"]
 anchors_preset = 15
 anchor_right = 1.0
@@ -2204,6 +2188,52 @@ render_target_update_mode = 4
 [node name="Camera3D" type="Camera3D" parent="CanvasLayer/SubViewportContainer/SubViewport"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5451, 0)
 cull_mask = 524288
+
+[node name="Control" type="Control" parent="CanvasLayer"]
+layout_mode = 3
+anchor_right = 1.0
+anchor_bottom = 1.018
+offset_bottom = -11.664001
+
+[node name="SprintBar" type="HSlider" parent="CanvasLayer/Control"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.1
+anchor_top = 0.75200003
+anchor_right = 0.9
+anchor_bottom = 1.0
+offset_left = 183.176
+offset_top = 107.70398
+offset_right = -193.24011
+offset_bottom = -36.0
+grow_horizontal = 2
+grow_vertical = 0
+size_flags_vertical = 8
+theme_override_icons/grabber = SubResource("ImageTexture_rj3p7")
+theme_override_icons/grabber_disabled = SubResource("ImageTexture_j4t2g")
+theme_override_styles/slider = SubResource("StyleBoxLine_8ilid")
+theme_override_styles/grabber_area = SubResource("StyleBoxLine_drrrm")
+value = 100.0
+editable = false
+scrollable = false
+
+[node name="HealthBar" type="VSlider" parent="CanvasLayer/Control"]
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 0.629
+anchor_right = 0.051000003
+anchor_bottom = 0.929
+offset_left = 21.0
+offset_top = 15.4079895
+offset_right = -21.752003
+offset_bottom = -25.992004
+theme_override_icons/grabber = SubResource("ImageTexture_rj3p7")
+theme_override_icons/grabber_disabled = SubResource("ImageTexture_j4t2g")
+theme_override_styles/slider = SubResource("StyleBoxLine_8ilid")
+theme_override_styles/grabber_area = SubResource("StyleBoxLine_drrrm")
+value = 100.0
+editable = false
+scrollable = false
 
 [node name="Camera" type="Node3D" parent="."]
 unique_name_in_owner = true
@@ -2358,7 +2388,6 @@ fire_rate_multiplier = 500.0
 [connection signal="timeout" from="CanvasLayer/HitSight/HitSightTimer" to="CanvasLayer" method="_on_hit_sight_timer_timeout"]
 [connection signal="add_signal_to_hud" from="Camera/LeanPivot/MainCamera/Weapons_Manager" to="CanvasLayer" method="_on_weapons_manager_add_signal_to_hud"]
 [connection signal="connect_weapon_to_hud" from="Camera/LeanPivot/MainCamera/Weapons_Manager" to="CanvasLayer" method="_on_weapons_manager_connect_weapon_to_hud"]
-[connection signal="debug_message" from="Camera/LeanPivot/MainCamera/Weapons_Manager" to="CanvasLayer" method="_on_weapons_manager_debug_message"]
 [connection signal="hit_successfull" from="Camera/LeanPivot/MainCamera/Weapons_Manager" to="CanvasLayer" method="_on_weapons_manager_hit_successfull"]
 [connection signal="update_ammo" from="Camera/LeanPivot/MainCamera/Weapons_Manager" to="CanvasLayer" method="_on_weapons_manager_update_ammo"]
 [connection signal="update_weapon_stack" from="Camera/LeanPivot/MainCamera/Weapons_Manager" to="CanvasLayer" method="_on_weapons_manager_update_weapon_stack"]

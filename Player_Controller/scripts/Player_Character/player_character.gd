@@ -14,6 +14,7 @@ signal player_damaged(current_health: float, max_health: float)
 @export var health_regeneration: bool = false
 @export var health_regen_rate: float = 5.0  # Health per second
 @export var health_regen_delay: float = 5.0  # Seconds before regen starts after damage
+@onready var health_bar: Range = $CanvasLayer/Control/HealthBar
 
 var current_health: float
 var health_regen_timer: float = 0.0
@@ -50,7 +51,7 @@ enum {LEFT = 1, CENTRE = 0, RIGHT = -1}
 @export_range(0.01,1.0) var air_acceleration_modifier: float = 0.1
 var sprint_on_cooldown: bool = false
 var sprint_time_remaining: float = sprint_time
-@onready var sprint_bar: Range = $CanvasLayer/SprintBar
+@onready var sprint_bar: Range = $CanvasLayer/Control/SprintBar
 
 const NORMAL_speed = 1
 @export_range(1.0,3.0) var sprint_speed: float = 2.0
@@ -327,15 +328,9 @@ func apply_knockback(knockback_vector: Vector3) -> void:
 
 ## Update health display
 func _update_health_display() -> void:
-	# Try to find health bar or health label in HUD
-	var health_bar = get_node_or_null("CanvasLayer/HealthBar")
-	if health_bar and health_bar is Range:
+	if health_bar:
 		health_bar.max_value = max_health
 		health_bar.value = current_health
-	
-	var health_label = get_node_or_null("CanvasLayer/HealthLabel")
-	if health_label and health_label is Label:
-		health_label.text = "Health: " + str(int(current_health)) + "/" + str(int(max_health))
 
 ## Called when player dies
 func _die() -> void:
